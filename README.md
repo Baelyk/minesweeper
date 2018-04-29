@@ -1,0 +1,3 @@
+# minesweeper
+
+Minesweeper in rust
