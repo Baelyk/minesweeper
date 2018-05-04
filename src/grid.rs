@@ -6,6 +6,7 @@ use grid::piston_window::line::Line;
 use grid::piston_window::rectangle::Rectangle;
 use grid::piston_window::types::Matrix2d;
 
+#[allow(dead_code)]
 pub struct Cell {
     x: usize,
     y: usize
@@ -33,6 +34,7 @@ impl Grid {
             background_color: background_color
         }
     }
+    #[allow(dead_code)]
     pub fn new_reg (size: usize, pixels: usize, line_radius: f64, line_color: [f32; 4], background_color: [f32; 4]) -> Grid {
         Grid {
             width: size,
@@ -44,6 +46,7 @@ impl Grid {
             background_color: background_color
         }
     }
+    #[allow(dead_code)]
     pub fn draw (&self, draw_state: &DrawState, transform: Matrix2d, g: &mut G2d) {
         let line = Line::new(self.line_color, self.line_radius);
         let rect = Rectangle::new(self.background_color);
