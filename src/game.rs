@@ -10,7 +10,7 @@ enum TileType {
 }
 
 #[derive(Copy, Clone)]
-struct GameTile {
+pub struct GameTile {
     x: usize,
     y: usize,
     tile: TileType,
@@ -18,7 +18,7 @@ struct GameTile {
     revealed: bool,
 }
 
-struct Game {
+pub struct Game {
     width: usize,
     height: usize,
     board: Vec<Vec<GameTile>>,
@@ -193,12 +193,6 @@ impl Game {
 }
 
 impl GameTile {
-    pub fn flag(&mut self) {
-        self.flagged = true;
-    }
-    pub fn unflag(&mut self) {
-        self.flagged = false;
-    }
     pub fn new_empty() -> GameTile {
         GameTile {
             x: 0,
@@ -230,7 +224,7 @@ impl GameTile {
             {
                 neighbours_pos[i] = ((self.x as i32 + x) as usize, (self.y as i32 + y) as usize);
             }
-            neighbours[i] = game.get_tile(x as usize, y as usize);
+            neighbours[i] = game.get_tile(self.x as usize, self.y as usize);
         }
 
         neighbours

@@ -6,6 +6,7 @@ mod grid;
 // TODO: Try to limit this from a * to just the things we need
 use piston_window::*;
 use grid::Grid;
+use game::Game;
 
 const TILE_SIZE: usize = 50;
 const GRID_X: usize = 10;
@@ -14,6 +15,7 @@ const GRID_RADIUS: f64 = 1.0;
 const GRID_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 const BACK_COLOR: [f32; 4] = [0.55, 0.7, 0.95, 1.0];
 const GRID_OFFSET: usize = 100;
+const MINES: usize = 5;
 
 // TODO: Hover color, clicked color (held down but not released)
 
@@ -44,6 +46,7 @@ fn main() {
         GRID_COLOR,
         BACK_COLOR,
     );
+    let game = Game::new(GRID_X, GRID_Y, MINES);
 
     window.events.set_ups(ups);
 
