@@ -79,7 +79,7 @@ impl Game {
     pub fn get_tile(&self, x: usize, y: usize) -> GameTile {
         self.board[x][y]
     }
-    pub fn reveal_tile(&self, x: usize, y: usize) {
+    pub fn reveal_tile(&mut self, x: usize, y: usize) {
         let mut tile = self.get_tile(x, y);
         // Trying to reveal a flagged or revealed tile is not allowed
         if tile.flagged {
@@ -93,7 +93,10 @@ impl Game {
 
         // If tile is empty and not next to any mines
         if match tile.tile {
-            TileType::Mine => false,
+            TileType::Mine => {
+                self.lose();
+                false
+            }
             TileType::Empty(count) => count == 0,
         } {
             for neighbor in tile.neighbors(self).iter() {
@@ -159,6 +162,10 @@ impl Game {
     }
     pub fn win(&mut self) {
         println!("Good game!");
+        self.over = true;
+    }
+    pub fn lose(&mut self) {
+        println!("Game over :(");
         self.over = true;
     }
     pub fn init(self) -> Game {
