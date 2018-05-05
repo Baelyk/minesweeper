@@ -7,7 +7,7 @@ use grid::piston_window::rectangle::Rectangle;
 use grid::piston_window::types::Matrix2d;
 
 #[allow(dead_code)]
-pub struct Cell {
+pub struct GridCell {
     x: usize,
     y: usize
 }

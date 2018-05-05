@@ -1,5 +1,6 @@
 extern crate piston_window;
 
+mod game;
 mod grid;
 
 // TODO: Try to limit this from a * to just the things we need
