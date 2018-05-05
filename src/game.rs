@@ -13,7 +13,8 @@ enum TileType {
 struct GameTile {
     x: usize,
     y: usize,
-    tile: TileType
+    tile: TileType,
+    flagged: bool
 }
 
 struct Game {
@@ -25,7 +26,7 @@ struct Game {
 
 impl Game {
     pub fn new (width: usize, height: usize, mines: usize) -> Game {
-        let mut board: Vec<Vec<GameTile>> = vec![vec![GameTile {x: 0, y: 0, tile: TileType::Empty(0)}; height]; width];
+        let mut board: Vec<Vec<GameTile>> = vec![vec![GameTile {x: 0, y: 0, tile: TileType::Empty(0), flagged: false}; height]; width];
         let mut mine_array: Vec<(usize, usize)> = vec![(0, 0); mines];
         let mut rng = thread_rng();
         for i in 0..mines {
@@ -42,7 +43,8 @@ impl Game {
                 board[x][y] = GameTile {
                     x: x,
                     y: y,
-                    tile: tiletype
+                    tile: tiletype,
+                    flagged: false
                 }
             }
         }
@@ -64,7 +66,8 @@ impl GameTile {
         GameTile {
             x: 0,
             y: 0,
-            tile: TileType::Empty(0)
+            tile: TileType::Empty(0),
+            flagged: false
         }
     }
     pub fn neighbors (&self, game: &Game) -> [GameTile; 8] {
