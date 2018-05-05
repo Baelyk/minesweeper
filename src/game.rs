@@ -22,7 +22,10 @@ struct Game {
     width: usize,
     height: usize,
     board: Vec<Vec<GameTile>>,
-    mines: usize, // Number of mines in the game
+    mines: usize,  // Number of mines in the game
+    solved: usize, // Number of mines flagged
+    flags: usize,  // Number of tiles flagged (Empty and Mine)
+    over: bool,
 }
 
 impl Game {
@@ -68,6 +71,9 @@ impl Game {
             height: height,
             board: board,
             mines: mines,
+            flags: 0,
+            solved: 0,
+            over: false,
         }.init()
     }
     pub fn get_tile(&self, x: usize, y: usize) -> GameTile {
@@ -104,6 +110,56 @@ impl Game {
                 }
             }
         }
+    }
+    pub fn flag_tile(&mut self, x: usize, y: usize) {
+        let mut tile = self.get_tile(x, y);
+        // Trying to flag a flagged or revealed tile is not allowed
+        if tile.flagged {
+            panic!("attempted to flag already flagged tile ({}, {})", x, y)
+        }
+        if tile.revealed {
+            panic!("attempted to flag revealed tile ({}, {})", x, y)
+        }
+
+        tile.flagged = true;
+        match tile.tile {
+            TileType::Mine => {
+                self.flags += 1;
+                self.solved += 1;
+            }
+            TileType::Empty(_) => {
+                self.flags += 1;
+            }
+        };
+
+        if self.mines == self.solved {
+            // TODO: self.win();
+        }
+    }
+    pub fn unflag_tile(&mut self, x: usize, y: usize) {
+        let mut tile = self.get_tile(x, y);
+        // Trying to unflag an unflagged or revealed tile is not allowed
+        if tile.flagged {
+            panic!("attempted to unflag not flagged tile ({}, {})", x, y)
+        }
+        if tile.revealed {
+            panic!("attempted to unflag revealed tile ({}, {})", x, y)
+        }
+
+        tile.flagged = false;
+        match tile.tile {
+            TileType::Mine => {
+                self.flags -= 1;
+                self.solved -= 1;
+            }
+            TileType::Empty(_) => {
+                self.flags -= 1;
+            }
+        };
+    }
+    pub fn win(&mut self) {
+        println!("Good game!");
+        self.over = true;
     }
     pub fn init(self) -> Game {
         for x in 0..self.width {
