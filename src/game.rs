@@ -3,7 +3,7 @@ extern crate rand; // TODO: Pick a spelling of neighbours
 
 use self::rand::{thread_rng, Rng};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 enum TileType {
     Mine,
     Empty(usize), // usize representing number of neighboring mines
@@ -15,6 +15,7 @@ struct GameTile {
     y: usize,
     tile: TileType,
     flagged: bool,
+    revealed: bool,
 }
 
 struct Game {
@@ -33,6 +34,7 @@ impl Game {
                     y: 0,
                     tile: TileType::Empty(0),
                     flagged: false,
+                    revealed: false,
                 };
                 height
             ];
@@ -56,6 +58,7 @@ impl Game {
                     y: y,
                     tile: tiletype,
                     flagged: false,
+                    revealed: false,
                 }
             }
         }
@@ -65,20 +68,81 @@ impl Game {
             height: height,
             board: board,
             mines: mines,
-        }
+        }.init()
     }
     pub fn get_tile(&self, x: usize, y: usize) -> GameTile {
         self.board[x][y]
     }
+    pub fn reveal_tile(&self, x: usize, y: usize) {
+        let mut tile = self.get_tile(x, y);
+        // Trying to reveal a flagged or revealed tile is not allowed
+        if tile.flagged {
+            panic!("attempted to reveal flagged tile ({}, {})", x, y)
+        }
+        if tile.revealed {
+            panic!("attempted to reveal already revealed tile ({}, {})", x, y)
+        }
+
+        tile.revealed = true;
+
+        // If tile is empty and not next to any mines
+        if match tile.tile {
+            TileType::Mine => false,
+            TileType::Empty(count) => count == 0,
+        } {
+            for neighbor in tile.neighbors(self).iter() {
+                // If neighbor is not revealed and not flagged
+                if !neighbor.revealed && !neighbor.flagged {
+                    // If neighbor is an empty tile
+                    if match neighbor.tile {
+                        TileType::Mine => false,
+                        TileType::Empty(_) => true,
+                    } {
+                        // Reveal neighbor
+                        self.reveal_tile(neighbor.x, neighbor.y)
+                    }
+                }
+            }
+        }
+    }
+    pub fn init(self) -> Game {
+        for x in 0..self.width {
+            for y in 0..self.height {
+                let mut tile = self.get_tile(x, y);
+                if match tile.tile {
+                    TileType::Mine => false,
+                    TileType::Empty(_) => true,
+                } {
+                    let mut count = 0;
+                    for neighbor in tile.neighbors(&self).iter() {
+                        match neighbor.tile {
+                            TileType::Mine => count += 1,
+                            TileType::Empty(_) => count += 0,
+                        }
+                    }
+                    tile.tile = TileType::Empty(count);
+                }
+            }
+        }
+
+        self
+    }
 }
 
 impl GameTile {
+    pub fn flag(&mut self) {
+        self.flagged = true;
+    }
+    pub fn unflag(&mut self) {
+        self.flagged = false;
+    }
     pub fn new_empty() -> GameTile {
         GameTile {
             x: 0,
             y: 0,
             tile: TileType::Empty(0),
             flagged: false,
+            revealed: false,
         }
     }
     pub fn neighbors(&self, game: &Game) -> [GameTile; 8] {
