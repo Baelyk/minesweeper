@@ -133,8 +133,8 @@ fn main() {
             }
         }
         event.mouse_cursor(|x, y| {
-            if x > 0.0 && x < (GRID_X * TILE_SIZE) as f64 && y > 0.0
-                && x < (GRID_Y * TILE_SIZE) as f64
+            if x > 0.0 && x < (GRID_X + GRID_OFFSET * TILE_SIZE) as f64 && y > 0.0
+                && x < (GRID_Y + GRID_OFFSET * TILE_SIZE) as f64
             {
                 focused = true;
                 mouse = (x as usize, y as usize);
