@@ -8,8 +8,12 @@ use grid::piston_window::types::Matrix2d;
 
 #[allow(dead_code)]
 pub struct GridCell {
-    x: usize,
-    y: usize,
+    pub x: usize,
+    pub y: usize,
+    width: usize,
+    height: usize,
+    x_off: usize,
+    y_off: usize,
 }
 
 pub struct Grid {
@@ -20,6 +24,25 @@ pub struct Grid {
     line_radius: f64,
     line_color: [f32; 4],
     background_color: [f32; 4],
+    x_off: usize,
+    y_off: usize,
+}
+
+impl GridCell {
+    pub fn color(&self, color: [f32; 4], draw_state: &DrawState, transform: Matrix2d, g: &mut G2d) {
+        let rect = Rectangle::new(color);
+        rect.draw(
+            [
+                (self.x * self.width + self.x_off) as f64,
+                (self.y * self.height + self.y_off) as f64,
+                self.width as f64,
+                self.height as f64,
+            ],
+            draw_state,
+            transform,
+            g,
+        );
+    }
 }
 
 impl Grid {
@@ -31,6 +54,8 @@ impl Grid {
         line_radius: f64,
         line_color: [f32; 4],
         background_color: [f32; 4],
+        x_off: usize,
+        y_off: usize,
     ) -> Grid {
         Grid {
             width: width,
@@ -40,6 +65,8 @@ impl Grid {
             line_radius: line_radius,
             line_color: line_color,
             background_color: background_color,
+            x_off: x_off,
+            y_off: y_off,
         }
     }
     #[allow(dead_code)]
@@ -49,6 +76,7 @@ impl Grid {
         line_radius: f64,
         line_color: [f32; 4],
         background_color: [f32; 4],
+        off: usize,
     ) -> Grid {
         Grid {
             width: size,
@@ -58,6 +86,8 @@ impl Grid {
             line_radius: line_radius,
             line_color: line_color,
             background_color: background_color,
+            x_off: off,
+            y_off: off,
         }
     }
     #[allow(dead_code)]
@@ -66,8 +96,8 @@ impl Grid {
         let rect = Rectangle::new(self.background_color);
         rect.draw(
             [
-                0.0,
-                0.0,
+                0.0 + self.x_off as f64,
+                0.0 + self.y_off as f64,
                 (self.width * self.cell_width) as f64,
                 (self.height * self.cell_height) as f64,
             ],
@@ -79,10 +109,10 @@ impl Grid {
         for x in 0..self.width + 1 {
             line.draw(
                 [
-                    (x * self.cell_width) as f64,
-                    0.0,
-                    (x * self.cell_width) as f64,
-                    (self.height * self.cell_height) as f64,
+                    (x * self.cell_width) as f64 + self.x_off as f64,
+                    0.0 + self.y_off as f64,
+                    (x * self.cell_width) as f64 + self.x_off as f64,
+                    (self.height * self.cell_height) as f64 + self.y_off as f64,
                 ],
                 draw_state,
                 transform,
@@ -92,10 +122,10 @@ impl Grid {
         for y in 0..self.height + 1 {
             line.draw(
                 [
-                    0.0,
-                    (y * self.cell_height) as f64,
-                    (self.width * self.cell_width) as f64,
-                    (y * self.cell_height) as f64,
+                    0.0 + self.x_off as f64,
+                    (y * self.cell_height) as f64 + self.y_off as f64,
+                    (self.width * self.cell_width) as f64 + self.x_off as f64,
+                    (y * self.cell_height) as f64 + self.y_off as f64,
                 ],
                 draw_state,
                 transform,
@@ -103,53 +133,19 @@ impl Grid {
             );
         }
     }
-    pub fn draw_offset(
-        &self,
-        x_off: f64,
-        y_off: f64,
-        draw_state: &DrawState,
-        transform: Matrix2d,
-        g: &mut G2d,
-    ) {
-        let line = Line::new(self.line_color, self.line_radius);
-        let rect = Rectangle::new(self.background_color);
-        rect.draw(
-            [
-                0.0 + x_off,
-                0.0 + y_off,
-                (self.width * self.cell_width) as f64,
-                (self.height * self.cell_height) as f64,
-            ],
-            draw_state,
-            transform,
-            g,
-        );
-
-        for x in 0..self.width + 1 {
-            line.draw(
-                [
-                    (x * self.cell_width) as f64 + x_off,
-                    0.0 + y_off,
-                    (x * self.cell_width) as f64 + x_off,
-                    (self.height * self.cell_height) as f64 + y_off,
-                ],
-                draw_state,
-                transform,
-                g,
-            );
-        }
-        for y in 0..self.height + 1 {
-            line.draw(
-                [
-                    0.0 + x_off,
-                    (y * self.cell_height) as f64 + y_off,
-                    (self.width * self.cell_width) as f64 + x_off,
-                    (y * self.cell_height) as f64 + y_off,
-                ],
-                draw_state,
-                transform,
-                g,
-            );
+    pub fn select_cell(&self, x: usize, y: usize) -> GridCell {
+        let x_coord = (x - self.x_off - x % self.cell_width) / self.cell_width;
+        let y_coord = (y - self.y_off - y % self.cell_height) / self.cell_height;
+        self.get_cell(x_coord, y_coord)
+    }
+    pub fn get_cell(&self, x: usize, y: usize) -> GridCell {
+        GridCell {
+            x: x,
+            y: y,
+            width: self.cell_width,
+            height: self.cell_height,
+            x_off: self.x_off,
+            y_off: self.y_off,
         }
     }
 }
