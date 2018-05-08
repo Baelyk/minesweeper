@@ -137,7 +137,7 @@ impl Game {
                             }
                             TileType::Empty(_) => {
                                 // TODO: PANIC IF A MINE IS TOLD TO BE REVEALD <------------------------------------------------------------------>
-                                println!("n{:?}", neighbor);
+                                // println!("n{:?}", neighbor);
                                 // Reveal neighbor
                                 self.reveal_tile(neighbor.x, neighbor.y);
                             }
@@ -203,7 +203,7 @@ impl Game {
         println!("Game over :(");
         self.over = true;
     }
-    pub fn init(self) -> Game {
+    pub fn init(mut self) -> Game {
         for x in 0..self.width {
             for y in 0..self.height {
                 let mut tile = self.get_tile(x, y);
@@ -219,6 +219,7 @@ impl Game {
                         }
                     }
                     tile.tile = TileType::Empty(count);
+                    self.board[x][y] = tile;
                 }
             }
         }
