@@ -1,20 +1,22 @@
+extern crate find_folder;
 extern crate piston_window;
 
 mod game;
 mod grid;
 
 // TODO: Try to limit this from a * to just the things we need
-use piston_window::*;
-use grid::Grid;
 use game::{Game, TileType};
+use grid::Grid;
+use piston_window::*;
 
 const TILE_SIZE: usize = 50;
 const GRID_X: usize = 10;
 const GRID_Y: usize = 10;
-const GRID_RADIUS: f64 = 1.0;
+const GRID_RADIUS: f64 = 0.5;
 const GRID_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 const BACK_COLOR: [f32; 4] = [0.55, 0.7, 0.95, 1.0];
 const REVEALED_COLOR: [f32; 4] = [0.8, 0.8, 0.8, 1.0];
+const TEXT_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 const GRID_OFFSET: usize = 100;
 const MINES: usize = 20;
 
@@ -53,6 +55,13 @@ fn main() {
     // TODO: determine if ups needs to be mutable
     let mut ups = 1;
     let mut focused = false;
+    let assets = find_folder::Search::ParentsThenKids(3, 3)
+        .for_folder("assets")
+        .unwrap();
+    println!("{:?}", assets);
+    let ref font = assets.join("Menlo.ttf");
+    let factory = window.factory.clone();
+    let mut glyphs = Glyphs::new(font, factory, TextureSettings::new()).unwrap();
 
     window.events.set_ups(ups);
 
@@ -74,6 +83,18 @@ fn main() {
             for x in 0..GRID_X as usize {
                 for y in 0..GRID_Y as usize {
                     let tile = game.get_tile(x, y);
+                    if tile.flagged {
+                        grid.get_cell(x, y).color(
+                            [1.0, 0.0, 0.0, 1.0],
+                            &DrawState {
+                                scissor: None,
+                                stencil: None,
+                                blend: None,
+                            },
+                            c.transform,
+                            g,
+                        );
+                    }
                     // println!("{:?}", tile);
                     match tile.tile {
                         TileType::Mine => {
@@ -88,7 +109,7 @@ fn main() {
                             g,
                         )*/
                         }
-                        TileType::Empty(_count) => {
+                        TileType::Empty(count) => {
                             if tile.revealed {
                                 grid.get_cell(x, y).color(
                                     REVEALED_COLOR,
@@ -99,7 +120,17 @@ fn main() {
                                     },
                                     c.transform,
                                     g,
-                                )
+                                );
+                                if count > 0 {
+                                    grid.get_cell(x, y).text(
+                                        TEXT_COLOR,
+                                        32,
+                                        count.to_string().as_str(),
+                                        &mut glyphs,
+                                        c.transform,
+                                        g,
+                                    );
+                                }
                             }
                         }
                     }
@@ -132,6 +163,21 @@ fn main() {
                 // println!("{:?}", cells[cell_x as usize][cell_y as usize]);
             }
         }
+        if let Some(Button::Mouse(MouseButton::Right)) = event.press_args() {
+            if focused {
+                let (x, y) = mouse;
+                let cell = grid.select_cell(x, y);
+                let tile = game.get_tile(cell.x, cell.y);
+                println!("{:?}", tile);
+                if !tile.revealed && !tile.flagged {
+                    game.flag_tile(cell.x, cell.y);
+                }
+                if !tile.revealed && tile.flagged {
+                    game.unflag_tile(cell.x, cell.y);
+                }
+                // println!("{:?}", cells[cell_x as usize][cell_y as usize]);
+            }
+        }
         event.mouse_cursor(|x, y| {
             if x > 0.0 && x < (GRID_X + GRID_OFFSET * TILE_SIZE) as f64 && y > 0.0
                 && x < (GRID_Y + GRID_OFFSET * TILE_SIZE) as f64
@@ -146,39 +192,11 @@ fn main() {
         // Update function
         event.update(|_| {
             if update {
-                window.draw_2d(&event, |c, g| {
-                    clear([1.0; 4], g); // [1.0; 4] is short for [1.0, 1.0, 1.0, 1.0] which is white
-                                        // Draw the grid with a Noned &DrawState
-                    grid.draw(
-                        &DrawState {
-                            scissor: None,
-                            stencil: None,
-                            blend: None,
-                        },
-                        c.transform,
-                        g,
-                    );
-
-                    for x in 0..GRID_X as usize {
-                        for y in 0..GRID_Y as usize {
-                            let tile = game.get_tile(x, y);
-                            println!("{:?}", tile);
-                            if tile.revealed {
-                                grid.get_cell(x, y).color(
-                                    REVEALED_COLOR,
-                                    &DrawState {
-                                        scissor: None,
-                                        stencil: None,
-                                        blend: None,
-                                    },
-                                    c.transform,
-                                    g,
-                                )
-                            }
-                        }
-                    }
-                });
-            }
+                match game.state {
+                    0 => window.set_should_close(true),
+                    _ => {}
+                };
+            };
         });
     }
 }

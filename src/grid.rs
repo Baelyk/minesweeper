@@ -1,12 +1,17 @@
+#![allow(dead_code)]
+
 extern crate piston_window;
 
+use piston_window::character::CharacterCache;
 use grid::piston_window::draw_state::DrawState;
 use grid::piston_window::G2d;
+use grid::piston_window::Graphics;
 use grid::piston_window::line::Line;
 use grid::piston_window::rectangle::Rectangle;
-use grid::piston_window::types::Matrix2d;
+use grid::piston_window::text::Text;
+use grid::piston_window::math::Matrix2d;
+use piston_window::Transformed;
 
-#[allow(dead_code)]
 pub struct GridCell {
     pub x: usize,
     pub y: usize,
@@ -29,19 +34,54 @@ pub struct Grid {
 }
 
 impl GridCell {
-    pub fn color(&self, color: [f32; 4], draw_state: &DrawState, transform: Matrix2d, g: &mut G2d) {
+    pub fn color(
+        self,
+        color: [f32; 4],
+        draw_state: &DrawState,
+        transform: Matrix2d,
+        g: &mut G2d,
+    ) -> GridCell {
         let rect = Rectangle::new(color);
         rect.draw(
             [
-                (self.x * self.width + self.x_off) as f64,
-                (self.y * self.height + self.y_off) as f64,
-                self.width as f64,
-                self.height as f64,
+                // TODO: Change these values from the temporary 1s
+                (self.x * self.width + self.x_off + 1) as f64,
+                (self.y * self.height + self.y_off + 1) as f64,
+                (self.width - 1) as f64,
+                (self.height - 1) as f64,
             ],
             draw_state,
             transform,
             g,
         );
+
+        self
+    }
+    pub fn text<C, G>(
+        self,
+        color: [f32; 4],
+        font_size: u32,
+        text: &str,
+        cache: &mut C,
+        transform: Matrix2d,
+        g: &mut G,
+    ) -> GridCell
+    where
+        C: CharacterCache,
+        G: Graphics<Texture = <C as CharacterCache>::Texture>,
+    {
+        Text::new_color(color, font_size).draw(
+            text,
+            cache,
+            &Default::default(),
+            transform.trans(
+                (self.x * self.width + self.x_off + self.width / 2) as f64,
+                (self.y * self.height + self.y_off + self.height) as f64,
+            ),
+            g,
+        );
+
+        self
     }
 }
 

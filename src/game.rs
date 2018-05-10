@@ -25,7 +25,7 @@ pub struct Game {
     mines: usize,  // Number of mines in the game
     solved: usize, // Number of mines flagged
     flags: usize,  // Number of tiles flagged (Empty and Mine)
-    over: bool,
+    pub state: usize,
 }
 
 impl Game {
@@ -75,7 +75,7 @@ impl Game {
             mines: mines,
             flags: 0,
             solved: 0,
-            over: false,
+            state: 1,
         }.init()
     }
     pub fn get_tile(&self, x: usize, y: usize) -> GameTile {
@@ -176,7 +176,7 @@ impl Game {
     pub fn unflag_tile(&mut self, x: usize, y: usize) {
         let mut tile = self.get_tile(x, y);
         // Trying to unflag an unflagged or revealed tile is not allowed
-        if tile.flagged {
+        if !tile.flagged {
             panic!("attempted to unflag not flagged tile ({}, {})", x, y)
         }
         if tile.revealed {
@@ -197,11 +197,11 @@ impl Game {
     }
     pub fn win(&mut self) {
         println!("Good game!");
-        self.over = true;
+        self.state = 2;
     }
     pub fn lose(&mut self) {
         println!("Game over :(");
-        self.over = true;
+        self.state = 0;
     }
     pub fn init(mut self) -> Game {
         for x in 0..self.width {
