@@ -18,7 +18,7 @@ const BACK_COLOR: [f32; 4] = [0.55, 0.7, 0.95, 1.0];
 const REVEALED_COLOR: [f32; 4] = [0.8, 0.8, 0.8, 1.0];
 const TEXT_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 const GRID_OFFSET: usize = 100;
-const MINES: usize = 20;
+const MINES: usize = 10;
 
 // TODO: Hover color, clicked color (held down but not released)
 
